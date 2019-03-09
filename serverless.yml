@@ -17,19 +17,27 @@ provider:
        - dynamodb:UpdateItem
        - dynamodb:DeleteItem
       Resource:
-        Fn::GetAtt:
+        - Fn::GetAtt:
           - ordersTable
           - Arn
+        - { "Fn::Join": [ '/', [{ "Fn::GetAtt": ['ordersTable', "Arn" ] }, "index", "UserOrders" ]]}
+
 
 functions:
-  makeOrder:
-    handler: handler.makeOrder
+  create:
+    handler: orders.create
     events:
     - http:
         path: orders
         method: post
-  deleteOrder:
-    handler: handler.deleteOrder
+  get:
+    handler: orders.get
+    events:
+    - http:
+        path: orders
+        method: get
+  delete:
+    handler: orders.delete
     events:
     - http:
         path: orders
@@ -40,82 +48,29 @@ resources:
     ordersTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: orders
+        TableName: Orders
         AttributeDefinitions:
-          - AttributeName: username
+          - AttributeName: Username
             AttributeType: S
-          - AttributeName: breakfastId
+          - AttributeName: BreakfastId
             AttributeType: N
         KeySchema:
-          - AttributeName: username
+          - AttributeName: BreakfastId
             KeyType: HASH
-          - AttributeName: breakfastId
+          - AttributeName: Username
             KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.js
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
-
-
-
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - http:
-#          path: users/create
-#          method: get
-#      - websocket: $connect
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
-#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-#      - cloudwatchEvent:
-#          event:
-#            source:
-#              - "aws.ec2"
-#            detail-type:
-#              - "EC2 Instance State-change Notification"
-#            detail:
-#              state:
-#                - pending
-#      - cloudwatchLog: '/aws/lambda/hello'
-#      - cognitoUserPool:
-#          pool: MyUserPool
-#          trigger: PreSignUp
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
+        GlobalSecondaryIndexes:
+          - IndexName: UserOrders
+            KeySchema:
+              - AttributeName: Username
+                KeyType: HASH
+              - AttributeName: BreakfastId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
