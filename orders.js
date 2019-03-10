@@ -1,23 +1,13 @@
 'use strict'
 const AWS = require('aws-sdk');
+const responses = require('src/js/responses')
 
-const dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 const documentClient = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
 
-const inputError = () => ({ statusCode: 400, body: JSON.stringify({ statusCode: 400, reason: 'Invalid input parameters'})})
-const success = payload => ({ statusCode: 200, body: JSON.stringify(payload) })
+const validateMakeOrder = input => input.userId && input.breakfastId && input.item
+const validateDeleteOrder = input => input.userId && input.breakfastId
+const validateGetOrders = input => !!input.breakfastId
 
-const validateMakeOrder = input =>
-    input.username &&
-    input.breakfastId && Number.isInteger(input.breakfastId) &&
-    input.itemId && Number.isInteger(input.itemId)
-const validateDeleteOrder = input =>
-    input.username &&
-    input.breakfastId && Number.isInteger(input.breakfastId)
-const validateGetOrders = input => {
-    const num = parseInt(input.breakfastId)
-    return input.breakfastId && !isNaN(num) && Number.isInteger(num)
-}
 
 /**
  * Create an order.
@@ -27,20 +17,22 @@ module.exports.create = async (event, context) => {
 
     const payload = event.body ? JSON.parse(event.body) : null
     console.log(`Body: ${JSON.stringify(payload)}`)
-    if (!validateMakeOrder(payload)) return inputError()
+    if (!validateMakeOrder(payload)) return responses.inputError400()
+
+    // TODO: Check existance of breakfast & item
 
     const params = {
-        TableName : 'Orders',
+        TableName : 'TechyBrekky',
         Item: {
-            Username: payload.username,
-            BreakfastId: payload.breakfastId,
-            ItemId: payload.itemId
+            PartitionKey: `BREAKFAST-${payload.breakfastId}`,
+            SortKey: `USER-${payload.userId}`,
+            Data: payload.item
         }
     }
 
     await documentClient.put(params).promise()
 
-    const response = success()
+    const response = responses.success200()
     console.log(`Response: ${JSON.stringify(response)}`)
     return response
 }
@@ -53,20 +45,21 @@ module.exports.get = async (event, context) => {
 
     const query = event.queryStringParameters
     console.log(`Query: ${JSON.stringify(query)}`)
-    if (!query || !validateGetOrders(query)) return inputError()
+    if (!query || !validateGetOrders(query)) return responses.inputError400()
 
     const params = {
-        TableName : 'Orders',
+        TableName : 'TechyBrekky',
         ExpressionAttributeValues: {
-            ':id': parseInt(query.breakfastId),
+            ':id': `BREAKFAST-${query.breakfastId}`,
+            ':bw': 'USER-'
         },
-        KeyConditionExpression: 'BreakfastId = :id',
+        KeyConditionExpression: 'PartitionKey = :id AND begins_with(SortKey, :bw)',
     };
 
     let orders = await documentClient.query(params).promise()
-    orders = orders.Items.map(o => ({ breakfastId: o.BreakfastId, username: o.Username, itemId: o.ItemId}))
+    orders = orders.Items.map(o => ({ breakfastId: o.PartitionKey.replace('BREAKFAST-', ''), userId: o.SortKey.replace('USER-', ''), item: o.Item}))
 
-    const response = success(orders)
+    const response = responses.success200(orders)
     console.log(`Response: ${JSON.stringify(response)}`)
     return response
 }
@@ -79,19 +72,19 @@ module.exports.delete = async (event, context) => {
 
     const payload = event.body ? JSON.parse(event.body) : null
     console.log(`Body: ${JSON.stringify(payload)}`)
-    if (!payload || !validateDeleteOrder(payload)) return inputError()
+    if (!payload || !validateDeleteOrder(payload)) return responses.inputError400()
 
     const params = {
-        TableName : 'Orders',
+        TableName : 'TechyBrekky',
         Key: {
-            Username: payload.username,
-            BreakfastId: payload.breakfastId
+            PartitionKey: `BREAKFAST-${payload.breakfastId}`,
+            SortKey: `USER-${payload.userId}`
         }
     }
 
     await documentClient.delete(params).promise()
 
-    const response = success()
+    const response = responses.success200()
     console.log(`Response: ${JSON.stringify(response)}`)
     return response
 }

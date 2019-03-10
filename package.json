@@ -1,0 +1,26 @@
+{
+  "name": "techy-brekky",
+  "version": "1.0.0",
+  "description": "",
+  "main": "n/a",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janakerman/techy-breakky.git"
+  },
+  "author": "Jan Akerman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/janakerman/techy-breakky/issues"
+  },
+  "homepage": "https://github.com/janakerman/techy-breakky#readme",
+  "dependencies": {
+    "moment": "^2.24.0",
+    "uuid": "^3.3.2"
+  }
+}
