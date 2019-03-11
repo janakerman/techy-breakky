@@ -57,7 +57,7 @@ module.exports.get = async (event, context) => {
     };
 
     let orders = await documentClient.query(params).promise()
-    orders = orders.Items.map(o => ({ breakfastId: o.PartitionKey.replace('BREAKFAST-', ''), userId: o.SortKey.replace('USER-', ''), item: o.Item}))
+    orders = orders.Items.map(o => ({ breakfastId: o.PartitionKey.replace('^BREAKFAST-', ''), userId: o.SortKey.replace('^USER-', ''), item: o.Item}))
 
     const response = responses.success200(orders)
     console.log(`Response: ${JSON.stringify(response)}`)

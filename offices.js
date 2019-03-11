@@ -19,8 +19,8 @@ module.exports.createOffice = async (event, context) => {
     const params = {
         TableName : 'TechyBrekky',
         Item: {
-            PartitionKey: `OFFICE`,
-            SortKey: `OFFICE-${payload.name}`,
+            PartitionKey: `OFFICE-${payload.name}`,
+            SortKey: `OFFICE`,
             Data: '0',
             Items: payload.items
         }
@@ -41,15 +41,15 @@ module.exports.getAll = async (event, context) => {
 
     const params = {
         TableName: 'TechyBrekky',
-        KeyConditionExpression: 'PartitionKey = :key AND begins_with(SortKey, :bw)',
+        indexName: 'GSI',
+        KeyConditionExpression: 'PartitionKey = :key',
         ExpressionAttributeValues: {
-            ':key': 'OFFICE',
-            ':bw': 'OFFICE-'
+            ':key': 'OFFICE'
         }
     };
 
     let orders = await documentClient.query(params).promise()
-    orders = orders.Items.map(o => ({ officeName: o.PartitionKey, items: o.Items}))
+    orders = orders.Items.map(o => ({ officeName: o.PartitionKey.replace('^OFFICE-', ''), items: o.Items}))
 
     const response = responses.success200(orders)
     console.log(`Response: ${JSON.stringify(response)}`)
