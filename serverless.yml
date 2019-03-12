@@ -22,6 +22,11 @@ provider:
           - Arn
         - { "Fn::Join": [ '/', [{ "Fn::GetAtt": ['TechyBrekky', "Arn" ] }, "index", "GSI" ]]}
 
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+
+
 functions:
 # Orders
   createOrder:
@@ -64,6 +69,15 @@ functions:
         method: post
 
 resources:
+  Outputs:
+    ApiUrl:
+      Description: "The API Gateway URL"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api.${self:custom.region}.amazonaws.com/${self:custom.stage}"
   Resources:
     TechyBrekky:
       Type: AWS::DynamoDB::Table

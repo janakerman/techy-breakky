@@ -1,6 +1,6 @@
 'use strict'
 const AWS = require('aws-sdk')
-const responses = require('src/js/responses')
+const responses = require('src/main/js/responses')
 const moment = require('moment')
 
 const documentClient = new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
