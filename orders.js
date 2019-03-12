@@ -22,7 +22,7 @@ module.exports.create = async (event, context) => {
     // TODO: Check existance of breakfast & item
 
     const params = {
-        TableName : 'TechyBrekky',
+        TableName : process.env.tableName,
         Item: {
             PartitionKey: `BREAKFAST-${payload.breakfastId}`,
             SortKey: `USER-${payload.userId}`,
@@ -48,7 +48,7 @@ module.exports.get = async (event, context) => {
     if (!query || !validateGetOrders(query)) return responses.inputError400()
 
     const params = {
-        TableName : 'TechyBrekky',
+        TableName : process.env.tableName,
         ExpressionAttributeValues: {
             ':id': `BREAKFAST-${query.breakfastId}`,
             ':bw': 'USER-'
@@ -75,7 +75,7 @@ module.exports.delete = async (event, context) => {
     if (!payload || !validateDeleteOrder(payload)) return responses.inputError400()
 
     const params = {
-        TableName : 'TechyBrekky',
+        TableName : process.env.tableName,
         Key: {
             PartitionKey: `BREAKFAST-${payload.breakfastId}`,
             SortKey: `USER-${payload.userId}`

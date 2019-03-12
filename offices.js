@@ -17,7 +17,7 @@ module.exports.createOffice = async (event, context) => {
     if (!validateCreate(payload)) return responses.inputError400()
 
     const params = {
-        TableName : 'TechyBrekky',
+        TableName : process.env.tableName,
         Item: {
             PartitionKey: `OFFICE-${payload.name}`,
             SortKey: `OFFICE`,
@@ -39,16 +39,19 @@ module.exports.createOffice = async (event, context) => {
 module.exports.getAll = async (event, context) => {
     console.log(event)
 
+    console.log(process.env.asdf)
+
     const params = {
-        TableName: 'TechyBrekky',
-        indexName: 'GSI',
-        KeyConditionExpression: 'PartitionKey = :key',
+        TableName: process.env.tableName,
+        IndexName: 'GSI',
+        KeyConditionExpression: 'SortKey = :key',
         ExpressionAttributeValues: {
             ':key': 'OFFICE'
         }
     };
 
     let orders = await documentClient.query(params).promise()
+    console.log(orders)
     orders = orders.Items.map(o => ({ officeName: o.PartitionKey.replace('^OFFICE-', ''), items: o.Items}))
 
     const response = responses.success200(orders)

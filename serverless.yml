@@ -7,6 +7,9 @@ provider:
       project: "techy-brekky"
   stage: dev
   region: eu-west-2
+  environment:
+    tableName: ${self:custom.tableName}
+    asdf: asdfasdfasdf
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -25,7 +28,7 @@ provider:
 custom:
   stage: ${opt:stage, self:provider.stage}
   region: ${opt:region, self:provider.region}
-
+  tableName: TechyBrekky-${self:custom.stage}
 
 functions:
 # Orders
@@ -73,7 +76,7 @@ resources:
     TechyBrekky:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: TechyBrekky-${self:custom.stage}
+        TableName: ${self:custom.tableName}
         AttributeDefinitions:
           - AttributeName: PartitionKey
             AttributeType: S
@@ -101,12 +104,3 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
-#  Outputs:
-#      ApiUrl:
-#        Description: "The API Gateway URL"
-#        Value:
-#          Fn::Join:
-#            - ""
-#            - - "https://"
-#              - Ref: ApiGatewayRestApi
-#              - ".execute-api.${self:custom.region}.amazonaws.com/${self:custom.stage}"

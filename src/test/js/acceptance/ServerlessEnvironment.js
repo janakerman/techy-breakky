@@ -14,10 +14,12 @@ class ServerlessEnvironment extends NodeEnvironment {
 
     async setup() {
         console.log(`Creating stack for acceptance tests. Stage name: ${this.stageName}`)
-        await super.setup();
+        await super.setup()
         await this.createServerlessStack()
 
-        this.global.apiGatewayEndpoint = ServerlessEnvironment.getAPIGatewayEndpoint()
+        const endpoint = ServerlessEnvironment.getAPIGatewayEndpoint()
+        console.log(`API Gateway endpoint: ${endpoint}`)
+        this.global.apiGatewayEndpoint = endpoint
     }
 
     async teardown() {
@@ -40,7 +42,7 @@ class ServerlessEnvironment extends NodeEnvironment {
     }
 
     static async getAPIGatewayEndpoint() {
-        const cloudformation = new AWS.CloudFormation({ apiVersion: '2010-05-15' });
+        const cloudformation = new AWS.CloudFormation({ apiVersion: '2010-05-15' })
         const stack = await cloudformation.describeStacks({ StackName: this.stageName }).promise()
         return stack.Stacks[0].Outputs.find(output => output.OutputKey === 'ServiceEndpoint').OutputValue
     }

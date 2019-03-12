@@ -19,7 +19,7 @@ module.exports.createBreakfast = async (event, context) => {
     if (!validateCreate(payload)) return responses.inputError400()
 
     const params = {
-        TableName : 'TechyBrekky',
+        TableName : process.env.tableName,
         Item: {
             PartitionKey: `BREAKFAST-${payload.office}-${payload.date}`,
             SortKey: `BREAKFAST-${payload.office}-${payload.date}`,
