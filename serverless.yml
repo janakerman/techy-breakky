@@ -69,20 +69,11 @@ functions:
         method: post
 
 resources:
-  Outputs:
-    ApiUrl:
-      Description: "The API Gateway URL"
-      Value:
-        Fn::Join:
-          - ""
-          - - "https://"
-            - Ref: ApiGatewayRestApi
-            - ".execute-api.${self:custom.region}.amazonaws.com/${self:custom.stage}"
   Resources:
     TechyBrekky:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: TechyBrekky
+        TableName: TechyBrekky-${self:custom.stage}
         AttributeDefinitions:
           - AttributeName: PartitionKey
             AttributeType: S
@@ -110,3 +101,12 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
+#  Outputs:
+#      ApiUrl:
+#        Description: "The API Gateway URL"
+#        Value:
+#          Fn::Join:
+#            - ""
+#            - - "https://"
+#              - Ref: ApiGatewayRestApi
+#              - ".execute-api.${self:custom.region}.amazonaws.com/${self:custom.stage}"

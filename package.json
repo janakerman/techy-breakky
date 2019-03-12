@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest --config src/test/js/unit/jest-config.json",
+    "acceptance-test": "jest --config src/test/js/acceptance/jest-config.json"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "aws-sdk": "^2.420.0",
     "jest": "^24.4.0"
   }
 }
